@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <fieldset name="profile_config" class="SoftCommerce\Profile\Ui\Component\Form\ConfigFieldset">
+        <fieldset name="packstation_config" sortOrder="100">
+            <settings>
+                <label translate="true">Packstation Configuration</label>
+                <collapsible>true</collapsible>
+                <opened>false</opened>
+                <dataScope>packstation_config</dataScope>
+            </settings>
+            <dynamicRows name="pack_station_field_mapping" component="SoftCommerce_Core/js/dynamic-rows" template="SoftCommerce_Core/dynamic-rows/default">
+                <settings>
+                    <scopeLabel>[global]</scopeLabel>
+                    <label translate="true">PackStation Address Field Mapping</label>
+                    <addButtonLabel translate="true">Add Field Mapping</addButtonLabel>
+                    <componentType>dynamicRows</componentType>
+                    <dndConfig>
+                        <param name="enabled" xsi:type="boolean">false</param>
+                    </dndConfig>
+                </settings>
+                <container name="record" component="Magento_Ui/js/dynamic-rows/record">
+                    <argument name="data" xsi:type="array">
+                        <item name="config" xsi:type="array">
+                            <item name="isTemplate" xsi:type="boolean">true</item>
+                            <item name="is_collection" xsi:type="boolean">true</item>
+                            <item name="componentType" xsi:type="string">container</item>
+                            <item name="fallbackResetTpl" xsi:type="string">ui/form/element/helper/fallback-reset-link</item>
+                        </item>
+                    </argument>
+                    <field name="line_no" formElement="input">
+                        <argument name="data" xsi:type="array">
+                            <item name="config" xsi:type="array">
+                                <item name="source" xsi:type="string">profile_config</item>
+                            </item>
+                        </argument>
+                        <settings>
+                            <scopeLabel>[global]</scopeLabel>
+                            <label translate="true">Address Line No</label>
+                            <dataType>text</dataType>
+                            <validation>
+                                <rule name="required-entry" xsi:type="boolean">true</rule>
+                            </validation>
+                            <dataScope>line_no</dataScope>
+                        </settings>
+                    </field>
+                    <field name="address_field" formElement="select">
+                        <argument name="data" xsi:type="array">
+                            <item name="config" xsi:type="array">
+                                <item name="source" xsi:type="string">profile_config</item>
+                            </item>
+                        </argument>
+                        <settings>
+                            <label translate="true">Client Address Field</label>
+                            <dataType>text</dataType>
+                            <dataScope>address_field</dataScope>
+                            <validation>
+                                <rule name="required-entry" xsi:type="boolean">true</rule>
+                            </validation>
+                        </settings>
+                        <formElements>
+                            <select>
+                                <settings>
+                                    <options class="SoftCommerce\PlentyPackstation\Ui\Component\Form\AddressFieldOptions"/>
+                                    <caption translate="true">-- Please Select --</caption>
+                                </settings>
+                            </select>
+                        </formElements>
+                    </field>
+                    <field name="prefix" formElement="input">
+                        <argument name="data" xsi:type="array">
+                            <item name="config" xsi:type="array">
+                                <item name="source" xsi:type="string">profile_config</item>
+                            </item>
+                        </argument>
+                        <settings>
+                            <scopeLabel>[global]</scopeLabel>
+                            <label translate="true">Prefix (optional)</label>
+                            <dataType>text</dataType>
+                            <validation>
+                                <rule name="required-entry" xsi:type="boolean">false</rule>
+                            </validation>
+                            <dataScope>prefix</dataScope>
+                        </settings>
+                    </field>
+                    <actionDelete name="action_delete">
+                        <argument name="data" xsi:type="array">
+                            <item name="config" xsi:type="array">
+                                <item name="source" xsi:type="string">profile_config</item>
+                                <item name="fit" xsi:type="boolean">true</item>
+                            </item>
+                        </argument>
+                        <settings>
+                            <label translate="true">Delete</label>
+                            <dataType>text</dataType>
+                            <componentType>actionDelete</componentType>
+                            <elementTmpl>Magento_Catalog/form/element/action-delete</elementTmpl>
+                        </settings>
+                    </actionDelete>
+                </container>
+            </dynamicRows>
+        </fieldset>
+    </fieldset>
+</form>

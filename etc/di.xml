@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="SoftCommerce\PlentyOrder\Api\Data\OrderInterface">
+        <plugin name="plenty_packstation_order_interface" type="SoftCommerce\PlentyPackstation\Plugin\OrderEntityPlugin"/>
+    </type>
+    <!-- profile - order export -->
+    <type name="SoftCommerce\PlentyOrderProfile\Model\OrderExportService\Generator\OrderAddress">
+        <plugin name="plenty_packstation_order_address_export_generator" type="SoftCommerce\PlentyPackstation\Plugin\OrderAddressExportGeneratorPlugin"/>
+    </type>
+</config>

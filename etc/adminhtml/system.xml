@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="plenty_packstation" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="0" showInStore="0">
+            <class>separator-top</class>
+            <label>Plenty Packstation</label>
+            <tab>softcommerce_tab</tab>
+            <resource>SoftCommerce_PlentyPackstation::system_config</resource>
+            <group id="order" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Order Configuration</label>
+                <field id="is_active_invoice_external" translate="label comment" type="select" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable External Invoice</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Downloads external invoices created in PM.</comment>
+                </field>
+                <field id="invoice_external_group_by_order" translate="label comment" type="select" sortOrder="2" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Group By Orders</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Invoices are saved to folders grouped by order id.</comment>
+                </field>
+                <field id="invoice_external_destination" translate="label comment" type="text" sortOrder="3" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Download destination</label>
+                    <comment>Specify path within magento media (pub/media) directory. Leave empty for default path: "customer/assets".</comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

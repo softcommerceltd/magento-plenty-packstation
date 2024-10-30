@@ -1,0 +1,20 @@
+{
+    "name": "softcommerce/module-plenty-packstation",
+    "description": "Packstation - PlentyMarkets integration.",
+    "require": {
+        "php": "~8.0.0||~8.1.0||~8.2.0||~8.3.0",
+        "softcommerce/module-plenty-customer-profile": "*",
+        "softcommerce/module-plenty-order-profile": "*"
+    },
+    "type": "magento2-module",
+    "license": "free",
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "SoftCommerce\\PlentyPackstation\\": ""
+        }
+    },
+    "version": "1.0.0"
+}
