@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace SoftCommerce\PlentyPackstation\Plugin;
 
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\SerializerInterface;
+use Netresearch\ShippingCore\Model\ShippingSettings\ShippingOption\Codes;
+use Netresearch\ShippingCore\Model\ShippingSettings\ShippingOption\Selection\OrderSelectionManager;
+use SoftCommerce\PlentyCustomerRestApi\Model\AddressInterface as HttpClient;
 use SoftCommerce\PlentyOrderProfile\Model\OrderExportService\Generator\OrderAddress;
-use SoftCommerce\PlentyOrderProfile\Model\OrderExportServiceInterface;
 
 /**
  * Class OrderAddressExportGeneratorPlugin used to
@@ -26,17 +27,12 @@ class OrderAddressExportGeneratorPlugin
     /**#@+
      * Config path
      */
-    private const XML_PATH_FIELD_MAPPING = 'plenty_order_export/haka_config/pack_station_field_mapping';
+    private const XML_PATH_FIELD_MAPPING = 'plenty_order_export/packstation_config/pack_station_field_mapping';
 
     /**
-     * @var array
+     * @var OrderSelectionManager
      */
-    private array $dataInMemory = [];
-
-    /**
-     * @var OrderAddress|null
-     */
-    private ?OrderAddress $subject = null;
+    private OrderSelectionManager $orderSelectionManager;
 
     /**
      * @var SerializerInterface
@@ -46,117 +42,64 @@ class OrderAddressExportGeneratorPlugin
     /**
      * @param SerializerInterface $serializer
      */
-    public function __construct(SerializerInterface $serializer)
-    {
+    public function __construct(
+        OrderSelectionManager $orderSelectionManager,
+        SerializerInterface $serializer
+    ) {
+        $this->orderSelectionManager = $orderSelectionManager;
         $this->serializer = $serializer;
     }
 
     /**
      * @param OrderAddress $subject
-     * @param $result
-     * @return mixed
-     */
-    public function afterInitialize(OrderAddress $subject, $result)
-    {
-        $this->dataInMemory = [];
-        return $result;
-    }
-
-    /**
-     * @param OrderAddress $subject
-     * @param array $request
+     * @param array $result
      * @return array
      * @throws LocalizedException
      */
-    public function afterBuildRequiredData(OrderAddress $subject, array $request): array
+    public function afterGenerate(OrderAddress $subject, array $result): array
     {
-        $this->subject = $subject;
-
-        if ($request) {
-            $request = $this->generatePackStationData($request);
+        $orderAddress = $subject->getSubject();
+        if ($orderAddress->getAddressType() !== 'shipping') {
+            return $result;
         }
 
-        return $request;
-    }
+        $selections = $this->orderSelectionManager->load((int) $orderAddress->getId()) ?: [];
 
-    /**
-     * @param array $request
-     * @return array
-     * @throws LocalizedException
-     */
-    private function generatePackStationData(array $request): array
-    {
-        $orderAddress = $this->subject->getSubject();
-
-        if (isset($this->dataInMemory[$orderAddress->getId()])) {
-            return $this->dataInMemory[$orderAddress->getId()];
-        }
-
-        $addressFieldMapping = $this->getPackStationFieldMapping();
-        if (!$addressFieldMapping || !$this->canGenerate()) {
-            $this->dataInMemory[$orderAddress->getId()] = $request;
-            return $request;
-        }
-
-        foreach ($addressFieldMapping as $map) {
-            if (!isset($map['line_no'], $map['address_field'])
-                || !$addressLine = $orderAddress->getStreetLine($map['line_no'])
-            ) {
+        $addressLines = [];
+        foreach ($selections as $selection) {
+            if ($selection->getShippingOptionCode() !== Codes::SERVICE_OPTION_DELIVERY_LOCATION) {
                 continue;
             }
 
-            if (!empty($map['prefix'])) {
-                $addressLine = "{$map['prefix']} $addressLine";
+            $addressLines[$selection->getInputCode()] = $selection->getInputValue();
+        }
+
+        if (!$addressLines) {
+            return $result;
+        }
+
+        $commonFields = [
+            HttpClient::POSTAL_CODE => $addressLines['postalCode'] ?? '',
+            HttpClient::TOWN => $addressLines['city'] ?? '',
+            HttpClient::STATE_ID => null
+        ];
+
+        if ($addressLines['type'] === 'postoffice') {
+            $result[HttpClient::GENDER] = '';
+            $result[HttpClient::TITLE] = '';  // company
+            $result[HttpClient::NAME1] = '';  // company
+            $result[HttpClient::ADDRESS1] = $addressLines['displayName'] ?? '';
+
+            if (isset($result[HttpClient::ADDRESS2])) {
+                $result[HttpClient::ADDRESS2] = '';
             }
-
-            $request[$map['address_field']] = trim($addressLine);
-
-            if (!empty($request["address{$map['line_no']}"])
-                && "address{$map['line_no']}" !== $map['address_field']
-            ) {
-                $request["address{$map['line_no']}"] = '';
+            if (isset($result[HttpClient::ADDRESS3])) {
+                $result[HttpClient::ADDRESS3] = '';
             }
+        } else {
+            $result[HttpClient::NAME1] = $addressLines['displayName'] ?? '';
         }
 
-        $this->dataInMemory[$orderAddress->getId()] = $request;
-
-        return $request;
-    }
-
-    /**
-     * @return array
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
-     */
-    private function getPackStationFieldMapping(): array
-    {
-        /** @var OrderExportServiceInterface $context */
-        $context = $this->subject->getContext();
-
-        if (!$mapping = $context->orderConfig()->getConfig(self::XML_PATH_FIELD_MAPPING)) {
-            return [];
-        }
-
-        try {
-            $mapping = $this->serializer->unserialize($mapping);
-        } catch (\InvalidArgumentException $e) {
-            $mapping = [];
-        }
-
-        return $mapping;
-    }
-
-    /**
-     * @return bool
-     * @throws LocalizedException
-     */
-    private function canGenerate(): bool
-    {
-        $arg1 = self::PACKSTATION_TAG;
-        $arg2 = self::POSTFILIALE_TAG;
-        $streetData = $this->subject->getSubject()->getStreet();
-        return !!array_filter($streetData, function ($item) use ($arg1, $arg2) {
-            return str_contains(strtolower($item), $arg1) || str_contains(strtolower($item), $arg2);
-        });
+        return array_merge($result, $commonFields);
     }
 }
