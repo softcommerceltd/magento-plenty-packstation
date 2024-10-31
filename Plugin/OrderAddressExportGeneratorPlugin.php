@@ -84,20 +84,27 @@ class OrderAddressExportGeneratorPlugin
             HttpClient::STATE_ID => null
         ];
 
+        if (isset($result[HttpClient::ADDRESS2])) {
+            $result[HttpClient::ADDRESS2] = '';
+        }
+        if (isset($result[HttpClient::ADDRESS3])) {
+            $result[HttpClient::ADDRESS3] = '';
+        }
+
         if ($addressLines['type'] === 'postoffice') {
             $result[HttpClient::GENDER] = '';
-            $result[HttpClient::TITLE] = '';  // company
-            $result[HttpClient::NAME1] = '';  // company
+            $result[HttpClient::TITLE] = '';
+            $result[HttpClient::NAME1] = '';
             $result[HttpClient::ADDRESS1] = $addressLines['displayName'] ?? '';
-
-            if (isset($result[HttpClient::ADDRESS2])) {
-                $result[HttpClient::ADDRESS2] = '';
-            }
-            if (isset($result[HttpClient::ADDRESS3])) {
-                $result[HttpClient::ADDRESS3] = '';
-            }
         } else {
-            $result[HttpClient::NAME1] = $addressLines['displayName'] ?? '';
+            $result[HttpClient::NAME1] = '';
+
+            if ($postNumber = $addressLines['customerPostnumber'] ?? null) {
+                $result[HttpClient::NAME4] = $postNumber;
+                $result[HttpClient::ADDRESS1] = $addressLines['displayName'] ?? '';
+            } else {
+                $result[HttpClient::NAME1] = $addressLines['displayName'] ?? '';
+            }
         }
 
         return array_merge($result, $commonFields);
