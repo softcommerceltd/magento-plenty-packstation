@@ -1,11 +1,14 @@
 <?php
+/**
+ * Copyright © Soft Commerce Ltd. All rights reserved.
+ * See LICENSE.txt for license details.
+ */
 
 declare(strict_types=1);
 
 namespace SoftCommerce\PlentyPackstation\Plugin;
 
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Serialize\SerializerInterface;
 use Netresearch\ShippingCore\Model\ShippingSettings\ShippingOption\Codes;
 use Netresearch\ShippingCore\Model\ShippingSettings\ShippingOption\Selection\OrderSelectionManager;
 use SoftCommerce\PlentyCustomerRestApi\Model\AddressInterface as HttpClient;
@@ -14,20 +17,15 @@ use SoftCommerce\PlentyOrderProfile\Model\OrderExportService\Generator\OrderAddr
 /**
  * Class OrderAddressExportGeneratorPlugin used to
  * intercept order address generation process
- * in order to provide PackStation data.
+ * in order to provide PackStation address.
  */
 class OrderAddressExportGeneratorPlugin
 {
     /**#@+
      * PackStation metadata
      */
-    private const PACKSTATION_TAG = 'packstation';
-    private const POSTFILIALE_TAG = 'postfiliale';
-
-    /**#@+
-     * Config path
-     */
-    private const XML_PATH_FIELD_MAPPING = 'plenty_order_export/packstation_config/pack_station_field_mapping';
+    private const POSTOFFICE = 'postoffice';
+    private const SERVICEPOINT = 'servicepoint';
 
     /**
      * @var OrderSelectionManager
@@ -35,19 +33,11 @@ class OrderAddressExportGeneratorPlugin
     private OrderSelectionManager $orderSelectionManager;
 
     /**
-     * @var SerializerInterface
+     * @param OrderSelectionManager $orderSelectionManager
      */
-    private SerializerInterface $serializer;
-
-    /**
-     * @param SerializerInterface $serializer
-     */
-    public function __construct(
-        OrderSelectionManager $orderSelectionManager,
-        SerializerInterface $serializer
-    ) {
+    public function __construct(OrderSelectionManager $orderSelectionManager)
+    {
         $this->orderSelectionManager = $orderSelectionManager;
-        $this->serializer = $serializer;
     }
 
     /**
@@ -74,7 +64,8 @@ class OrderAddressExportGeneratorPlugin
             $addressLines[$selection->getInputCode()] = $selection->getInputValue();
         }
 
-        if (!$addressLines) {
+        $typeId = $addressLines['type'] ?? null;
+        if (!$addressLines || !$typeId) {
             return $result;
         }
 
@@ -87,11 +78,13 @@ class OrderAddressExportGeneratorPlugin
         if (isset($result[HttpClient::ADDRESS2])) {
             $result[HttpClient::ADDRESS2] = '';
         }
+
         if (isset($result[HttpClient::ADDRESS3])) {
             $result[HttpClient::ADDRESS3] = '';
         }
 
-        if ($addressLines['type'] === 'postoffice') {
+        $typeId = strtolower($typeId);
+        if (in_array($typeId, [self::POSTOFFICE, self::SERVICEPOINT])) {
             $result[HttpClient::GENDER] = '';
             $result[HttpClient::TITLE] = '';
             $result[HttpClient::NAME1] = '';
