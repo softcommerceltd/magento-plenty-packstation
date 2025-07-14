@@ -1,6 +1,6 @@
 {
     "name": "softcommerce/module-plenty-packstation",
-    "description": "Packstation - PlentyMarkets integration.",
+    "description": "Packstation - PlentyONE integration.",
     "require": {
         "php": "~8.0.0||~8.1.0||~8.2.0||~8.3.0||~8.4.0",
         "softcommerce/module-plenty-customer-profile": "*",
@@ -16,5 +16,5 @@
             "SoftCommerce\\PlentyPackstation\\": ""
         }
     },
-    "version": "1.0.2"
+    "version": "1.0.3"
 }

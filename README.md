@@ -1,5 +1,5 @@
 ## About
-Packstation - PlentyMarkets customisations
+Packstation - PlentyONE customisations
 
 ## Purpose
 Used to extend functionality of Plenty modules.
